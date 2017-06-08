@@ -1,6 +1,9 @@
 from django.shortcuts import render
 from translation import models
-from django.http import HttpResponse
+from translation.regandtrans.stutter import Stutter
+from translation.regandtrans.translatorbysimulate import BingTranslator
+from translation.regandtrans.translatorbysimulate import GoogleTranslator
+from django.http import JsonResponse
 from hashlib import md5
 import json
 
@@ -13,7 +16,7 @@ class catalog_handle(object):
     def __init__(self, catalog):
         """TODO: to be defined1.
 
-        :catalog: TODO
+        :catalog: catalog name
 
         """
         self._catalog = catalog
@@ -24,7 +27,7 @@ class catalog_handle(object):
 
     def get_catalog_hash(self):
         """get the hash of catalog name
-        :returns: TODO
+        :returns: a md5 hash from catalog name
 
         """
         md5_handle = md5()
@@ -145,11 +148,11 @@ class catalog_handle(object):
         
         return pairs_in_catalog
 
-def get_json(request):
+def tranAstutter(request):
     """get and handle with json
 
     :request: TODO
     :returns: TODO
 
     """
-    pass
+    json.loads(request.body)
