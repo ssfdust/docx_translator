@@ -156,3 +156,5 @@ def tranAstutter(request):
 
     """
     json.loads(request.body)
+    return JsonResponse()
+

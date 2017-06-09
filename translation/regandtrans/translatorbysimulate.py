@@ -2,7 +2,9 @@ from selenium import webdriver
 from pyvirtualdisplay import Display
 from googletrans import Translator as GoogleTrans
 import time
+import re
 
+RE_COMMA = re.compile('(,|，|.|。|!|！|？|\?|\n|……)')
 class BingTranslator(object):
 
     """Translate the text
@@ -43,10 +45,13 @@ class BingTranslator(object):
         self.lang_selector_chinese.click()
 
         for sentense in src_text:
-            self.input.clear()
-            self.input.send_keys(sentense)
-            time.sleep(1)
-            self.trans.append(self.output.text)
+            if not re.match(RE_COMMA, item):
+                self.input.clear()
+                self.input.send_keys(sentense)
+                time.sleep(1)
+                self.trans.append(self.output.text)
+            else :
+                self.trans.append(sentense)
 
         # stop the simulation and set the result
         self.browser.quit()
@@ -89,9 +94,34 @@ class GoogleTranslator(object):
         trans = GoogleTrans()
         translation = trans.detect(text=self._src_text[0])
         src_lang = translation.lang
+        src_text = self._src_text
         tar_lang = self._tar_lang
 
-        for item in self._src_text:
-            translation = trans.translate(item, src=src_lang, dest=tar_lang)
-            self.trans.append(translation.text)
+        for sentense in src_text:
+            if not re.match(RE_COMMA, sentense):
+                translation = trans.translate(sentense, src=src_lang, dest=tar_lang)
+                self.trans.append(translation.text)
+            else :
+                self.trans.append(sentense)
 
+class article_splitor(object):
+
+    """The class is used for spliting article"""
+
+    def __init__(self, text):
+        """Initilize the class
+
+        :text: the source text
+        :text_list: return text list splited by comma
+
+        """
+        self._text = text
+        self.text_list = split_text()
+
+    def split_text(self):
+        """main split function
+        :returns: TODO
+
+        """
+        text = self._text
+        return re.split(RE_COMMA, text)
