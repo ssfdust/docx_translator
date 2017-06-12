@@ -24,5 +24,5 @@ urlpatterns = [
     #url(r'^dictionary/', tr_views.dictionary),
     #url(r'^substitue/', tr_views.substitue),
     url(r'^$', TemplateView.as_view(template_name='index.html')),
-    url(r'^api/', include('translation.urls', namespace='api'))
+    #url(r'^api/', include('translation.urls', namespace='api'))
 ]

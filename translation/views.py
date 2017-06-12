@@ -3,8 +3,10 @@ from translation import models
 from translation.regandtrans.stutter import Stutter
 from translation.regandtrans.translatorbysimulate import BingTranslator
 from translation.regandtrans.translatorbysimulate import GoogleTranslator
+from translation.docxreplace.docxrpls import docxrpls
 from django.http import JsonResponse
 from hashlib import md5
+import logging
 import json
 
 # Create your views here.

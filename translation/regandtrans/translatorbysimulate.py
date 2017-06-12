@@ -49,9 +49,9 @@ class BingTranslator(object):
                 self.input.clear()
                 self.input.send_keys(sentense)
                 time.sleep(1)
-                self.trans.append(self.output.text)
+                self.trans.append(set(sentense, self.output.text))
             else :
-                self.trans.append(sentense)
+                self.trans.append(set(sentense, sentense))
 
         # stop the simulation and set the result
         self.browser.quit()
@@ -100,9 +100,9 @@ class GoogleTranslator(object):
         for sentense in src_text:
             if not re.match(RE_COMMA, sentense):
                 translation = trans.translate(sentense, src=src_lang, dest=tar_lang)
-                self.trans.append(translation.text)
+                self.trans.append(set(sentense, translation.text))
             else :
-                self.trans.append(sentense)
+                self.trans.append(set(sentense, sentense))
 
 class article_splitor(object):
 
