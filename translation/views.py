@@ -137,7 +137,8 @@ class catalog_handle(object):
         ret.delete()
 
     def get_all_pairs(self):
-        """get all the word pairs
+        """
+        get all the word pairs
         :returns: pair dict
 
         """
@@ -151,7 +152,8 @@ class catalog_handle(object):
         return pairs_in_catalog
 
 def tranAstutter(request):
-    """get and handle with json
+    """
+    get and handle with json
 
     :request: TODO
     :returns: TODO
@@ -159,4 +161,9 @@ def tranAstutter(request):
     """
     json.loads(request.body)
     return JsonResponse()
+
+def uploadfile(request):
+    """
+    upload a file and store it in tempfile
+    """
 
