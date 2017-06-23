@@ -167,3 +167,30 @@ def uploadfile(request):
     upload a file and store it in tempfile
     """
 
+def docx_keyword_replace(docx, catalog):
+    database = catalog_handle(catalog)
+    all_data = database.get_all_pairs()
+    file_handle  = docxrpls(docx)
+    dict_list = [(i, x) for i,x in all_data[catalog].items()]
+    full_text_list = file_handle.full_text_list
+    for i in full_text_list:
+        for r in dict_list:
+            try:
+                i.replace(*r)
+            except:
+                print(r)
+    replace = [(src, tar) for src, tar in zip(file_handle.get_text_list(), full_text_list)]
+    file_handle.replace_docx(replace)
+    file_handle.create_new_file('/tmp/new_' + docx)
+    file_handle.close()
+
+def docx_translation(docx, tar_lang=None):
+    file_handle = docxrpls(docx)
+    full_text_list = file_handle.full_text_list
+    google_trans = GoogleTranslator(full_text_list, tar_lang)
+    google_trans.translate()
+    replace = [(src, tar) for src, tar in zip(full_text_list, google_trans.trans)]
+    file_handle.replace_docx(replace)
+    file_handle.create_new_file('/tmp/trans_' + docx)
+    file_handle.close()
+
