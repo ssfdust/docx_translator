@@ -105,7 +105,6 @@ class docxrpls(object):
         doc_xml = 'word/document.xml'
         doc_xml_set = {'word/document.xml'}
         file_to_copy = all_file - doc_xml_set 
-        print(file_to_copy)
 
         self.zf_out = ZipFile(newfilename, mode="w", compression=self.zf_in.compression)
         self.zf_out.writestr(doc_xml, self.changed.encode('utf-8'))
@@ -113,7 +112,6 @@ class docxrpls(object):
         for fname in file_to_copy:
             self.zf_out.writestr(fname, self.zf_in.open(fname).read(), compress_type=ZIP_DEFLATED)
         
-        print(self.zf_out.namelist())
 
     def close(self):
         self.zf_in.close()

@@ -1,6 +1,7 @@
 from selenium import webdriver
 from pyvirtualdisplay import Display
 from googletrans import Translator as GoogleTrans
+
 import time
 import re
 
@@ -49,9 +50,9 @@ class BingTranslator(object):
                 self.input.clear()
                 self.input.send_keys(sentense)
                 time.sleep(1)
-                self.trans.append((sentense, self.output.text))
+                self.trans.append(self.output.text)
             else :
-                self.trans.append((sentense, sentense))
+                self.trans.append(sentense)
 
         # stop the simulation and set the result
         self.browser.quit()
@@ -98,11 +99,8 @@ class GoogleTranslator(object):
         tar_lang = self._tar_lang
 
         for sentense in src_text:
-            if not re.match(RE_COMMA, sentense):
-                translation = trans.translate(sentense, src=src_lang, dest=tar_lang)
-                self.trans.append((sentense, translation.text))
-            else :
-                self.trans.append((sentense, sentense))
+            translation = trans.translate(sentense, src=src_lang, dest=tar_lang)
+            self.trans.append(translation.text)
 
 class article_splitor(object):
 
