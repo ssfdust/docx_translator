@@ -21,6 +21,7 @@ from translation import views as tr_views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^transAstutter/', tr_views.tranAstutter),
+    url(r'upload/', tr_views.uploadfile),
     #url(r'^dictionary/', tr_views.dictionary),
     #url(r'^substitue/', tr_views.substitue),
     url(r'^$', TemplateView.as_view(template_name='index.html')),
