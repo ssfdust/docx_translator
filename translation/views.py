@@ -6,6 +6,7 @@ from translation.regandtrans.translatorbysimulate import GoogleTranslator
 from translation.docxreplace.docxrpls import docxrpls
 from django.http import JsonResponse
 from hashlib import md5
+from django.core.files.base import ContentFile
 
 import os
 import logging
@@ -161,29 +162,95 @@ def tranAstutter(request):
     :returns: TODO
 
     """
-    json.loads(request.body)
-    return JsonResponse()
+    if request.method == 'POST':
+        json.loads(request.body)
+        return JsonResponse()
 
-def uploadfile(request):
+def file_uploader(request):
     """
     upload a file and store it in tempfile
+    XHR2 support file transmission 
+    ajax should use FormData class to implement it
     """
-    q = json.loads(request.body)
-    test = request.FILES['test']
-    save_file(test)
-    return JsonResponse(q)
+    if request.method == 'POST':
+        res = dict()
+        upload_file = request.FILES['docx_file']
+        if upload_file:
+            file_content = ContentFile(upload_file.read())
+            docx_f, status = models.docx_file.objects.get_or_create(file_name=upload_file.name)
+            docx_f.file_path.save(upload_file.name, file_content)
+            docx_f.save()
+            res['overwrite'] = status
+            res['req_path'] = docx_f.file_path.url
 
-def save_file(f):
-    uploads_path = os.path.realpath('uploads')
-    with open(uploads_path + '/temp.docx', "wb+") as docx:
-        for chunk in f.chunks():
-            docx.write(chunk)
+        return JsonResponse(res)
+
+def file_handler(request):
+    """
+    handle file with json passed from frontend
+    request json format
+    this api accept 3 kinds of json
+    one starts with "action", it suppports two methods.one is translate,
+    another is replace
+    
+    eg.
+    {
+        "action":"translate"
+        "api":"google"
+        "target_lang":"zh-CN"
+        "req_path":"<req_path>"
+    }
+
+    {
+        "action":"subsitute"
+        "word_cat":"<word_catalog>"
+        "req_path":"<req_path>"
+    }
+
+    it will response with the json:
+    {
+        "status":"success"
+        "trans_path":"trans_path"
+    }
+    """
+    if request.method == 'POST':
+        req = json.loads(request.body)
+        if req['action'] == "subsitute":
+            res = dict()
+            word_cat = req['word_cat']
+            req_path = req['req_path']
+            res['status'], res['res_path'] = docx_keyword_replace(req_path, word_cat)
+            return JsonResponse(res)
+        elif req['action'] == 'translate':
+            res = dict()
+            tar_lang = req['tar_lang']
+            req_path = req['req_path']
+            api = req['api']
+            res['status'], res['res_path'] = docx_translation(req_path, tar_lang=tar_lang, api=api)
+            return JsonResponse(res)
+        else:
+            return JsonResponse({"error":"wrong action"})
+
+
+def file_downloader(request):
+    """
+    download file with json requset
+
+    """
+    if request.method == 'POST':
+        req = json.loads(request.body)
+        if req['req_path']:
+            file = './' + req['req_path']
+            with open(req) as f:
+                 pass
 
 def docx_keyword_replace(docx, catalog):
-    uploads_path = os.path.realpath('uploads')
+    uploads_path = os.path.dirname(docx)
+    docx = os.path.basename(docx)
+    changed_file = uploads_path + "/new_" + docx
     database = catalog_handle(catalog)
     all_data = database.get_all_pairs()
-    file_handle  = docxrpls(uploads_path + '/' + docx)
+    file_handle  = docxrpls('./' + uploads_path + '/' + docx)
     dict_list = [(i, x) for i,x in all_data[catalog].items()]
     full_text_list = file_handle.full_text_list
 
@@ -193,22 +260,30 @@ def docx_keyword_replace(docx, catalog):
     replace = [(src, tar) for src, tar in zip(file_handle.get_text_list(), full_text_list)]
     file_handle.replace_docx(replace)
     
-    file_handle.create_new_file(uploads_path + '/new_' + docx)
+    file_handle.create_new_file('./' + changed_file)
     file_handle.close()
 
-def docx_translation(docx, tar_lang=None):
-    uploads_path = os.path.realpath('uploads')
-    file_handle = docxrpls(uploads_path + '/new_' + docx)
+    return ("ture", changed_file)
+
+def docx_translation(docx, tar_lang=None, api='google'):
+    uploads_path = os.path.dirname(docx)
+    docx = os.path.basename(docx)
+    trans_file = uploads_path + '/trans_' + docx
+    file_handle = docxrpls('./' + uploads_path + '/' + docx)
     full_text_list = file_handle.full_text_list
 
     if not tar_lang:
         tar_lang = 'zh-CN'
-    google_trans = GoogleTranslator(full_text_list, tar_lang)
-    google_trans.translate()
-    replace = [(src, tar) for src, tar in zip(full_text_list, google_trans.trans)]
+    if api == 'google':
+        trans = GoogleTranslator(full_text_list, tar_lang)
+        trans.translate()
+    elif api == "bing":
+        trans = BingTranslator(full_text_list, tar_lang)
+        trans.translate()
+    replace = [(src, tar) for src, tar in zip(full_text_list, trans.trans)]
     file_handle.replace_docx(replace)
-    file_handle.create_new_file(uploads_path + '/trans_' + docx)
+    file_handle.create_new_file('./' + trans_file)
     file_handle.close()
 
-    return google_trans.trans
+    return ("true", trans_file)
 

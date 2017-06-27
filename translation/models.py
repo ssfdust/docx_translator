@@ -1,6 +1,10 @@
 from django.db import models
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+import os
 
 # Create your models here.
+
 
 class catalog_ids(models.Model):
 
@@ -10,6 +14,11 @@ class catalog_ids(models.Model):
     """
     id = models.IntegerField(primary_key=True)
     catalog = models.CharField(max_length=50)
+
+class docx_file(models.Model):
+    file_name = models.CharField(max_length=255)
+    upload_storage = FileSystemStorage(location=settings.UPLOAD_ROOT, base_url=settings.UPLOAD_URL)
+    file_path = models.FileField(upload_to='./docx/',storage=upload_storage)
 
 class catalog_000(models.Model):
 
